@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat - Chat App</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-messages" id="messages"></div>
+    <div class="chat-input">
+      <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
+      <button onclick="enviar()">Enviar</button>
+    </div>
+  </div>  
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.0/socket.io.js"></script>
+  <script>
+    const socket = io("/");
+    const messagesContainer = document.getElementById("messages");
+    const messageInput = document.getElementById("messageInput");
+    const username = localStorage.getItem("username");
+
+    socket.on("connect", () => {
+      console.log("Conectado ao servidor");
+    });
+
+    socket.on("message", (data) => {
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("message");
+
+      if (data.message.includes("<img")) {
+        messageElement.innerHTML = `${data.username}: ${data.message}`;
+      } else {
+        messageElement.textContent = `${data.username}: ${data.message}`;
+      }
+
+      if (data.username === username) {
+        messageElement.classList.add("my-message");
+      } else {
+        messageElement.classList.add("other-message");
+      }
+
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+
+    async function enviar() {
+      const message = messageInput.value.trim();
+      if (message !== "") {
+        if (message.startsWith("/text")) {
+          const userMessage = message.slice(5).trim();
+          const response = await fetch('/openai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage })
+          });
+          const data = await response.json();
+          socket.emit("message", { username: "GPT", message: data });
+        } else if (message.startsWith("/image")) {
+          const imageDescription = message.slice(6).trim();
+          const response = await fetch('/openai/image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: imageDescription })
+          });
+          const data = await response.json();
+          if (data.url) {
+            socket.emit("message", { username: "GPT", message: `<img src="${data.url}" alt="Imagem gerada">` });
+          } else {
+            socket.emit("message", { username: "GPT", message: "Erro ao gerar a imagem." });
+          }
+        } else {
+          socket.emit("message", { username, message });
+        }
+        messageInput.value = "";
+      }
+    }
+
+    messageInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        enviar();
+      }
+    });
+  </script>
+</body>
+</html>
