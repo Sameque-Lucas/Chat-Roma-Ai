@@ -11,6 +11,7 @@ if (!process.env.OPENAI_API_KEY) {
 }
 
 const openaiApiKey = process.env.OPENAI_API_KEY;
+const clashRoyaleApiKey = process.env.CLASH_ROYALE_API_KEY;
 
 const app = express();
 const server = http.createServer(app);
@@ -102,6 +103,53 @@ app.get("/dog", async (req, res) => {
   } catch (error) {
     console.error("Erro ao buscar imagem de cachorro:", error);
     res.status(500).json({ error: "Erro ao buscar imagem de cachorro" });
+  }
+});
+
+app.get("/fox", async (req, res) => {
+  try {
+    // Buscando imagem de raposa usando a API RandomFox
+    const response = await axios.get('https://randomfox.ca/floof/');
+    const foxImageUrl = response.data.image;
+    res.json({ url: foxImageUrl }); // Envia a URL da imagem de raposa
+  } catch (error) {
+    console.error("Erro ao buscar imagem de raposa:", error);
+    res.status(500).json({ error: "Erro ao buscar imagem de raposa" });
+  }
+
+});
+
+app.get("/clash-royale/cards", async (req, res) => {
+  try {
+    const response = await axios.get('https://api.clashroyale.com/v1/cards', {
+      headers: {
+        Authorization: `Bearer ${clashRoyaleApiKey}`,
+      },
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error("Erro ao buscar informações das cartas:", error);
+    res.status(500).json({ error: "Erro ao buscar informações das cartas" });
+  }
+});
+
+app.get("/sounds/:type", (req, res) => {
+  const sounds = {
+    cat: "https://www.myinstants.com/pt/instant/seu-madruga-nossa/?utm_source=copy&utm_medium=share",
+    dog: "https://www.myinstants.com/media/sounds/dog-bark.mp3",
+    fox: "https://freesound.org/s/676376/",
+    lion: "https://www.myinstants.com/media/sounds/lion-roar.mp3",
+    mario: "https://www.myinstants.com/media/sounds/mario-coin.mp3",
+    victory: "https://www.myinstants.com/media/sounds/victory.mp3",
+    saber: "https://www.myinstants.com/media/sounds/lightsaber.mp3",
+    wow: "https://www.myinstants.com/media/sounds/wow.mp3"
+  };
+
+  const sound = sounds[req.params.type];
+  if (sound) {
+    res.json({ url: sound });
+  } else {
+    res.status(404).send("Som não encontrado.");
   }
 });
 

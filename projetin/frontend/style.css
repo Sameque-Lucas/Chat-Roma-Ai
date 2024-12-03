@@ -1,10 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #2a2a2a; /* Cor de fundo escura, mas não muito forte */
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(#141e30, #2e3470);
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
+  align-items: center;
   height: 100vh;
   overflow: hidden;
 }
@@ -15,11 +20,17 @@ body {
   height: 90vh;
   display: flex;
   flex-direction: column;
-  background-color: #333333;
+  background-color: #2c2c2c;
+  border: 1px solid #3c3c3c;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  margin-top: 20px; /* Descola a caixa do chat da parte superior */
+}
+
+.chat-header {
+  padding: 15px;
+  display: flex;
+  align-items: center;
 }
 
 .chat-messages {
@@ -29,65 +40,100 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  color: #e0e0e0; /* Cor clara para o texto */
-  border-bottom: 1px solid #555; /* Cor suave para a borda */
+  background: #1e1e2f;
 }
 
 .message {
-  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  border-radius: 15px;
+  padding: 10px 15px;
+  font-size: 14px;
+  position: relative;
+  color: #d1d1d1;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.message img {
+  max-width: 100%;
+  height: auto;
   border-radius: 10px;
   margin-bottom: 10px;
-  word-wrap: break-word;
 }
 
 .my-message {
-  background-color: #4a4a4a; /* Cinza mais escuro para mensagens do usuário */
   align-self: flex-end;
+  background: #5865f2; /* Azul para mensagens enviadas */
+  color: #fff;
 }
 
 .other-message {
-  background-color: #5a5a5a; /* Cinza um pouco mais claro para mensagens de outros */
   align-self: flex-start;
+  background: #2b2b38; /* Cinza escuro para mensagens recebidas */
+}
+
+.message-time {
+  position: absolute;
+  font-size: 11px;
+  color: #888;
+  bottom: -15px;
+  right: 10px;
 }
 
 .chat-input {
   display: flex;
   padding: 10px;
-  background-color: #444444; /* Fundo mais escuro para a área de input */
-  border-top: 1px solid #555; /* Borda suave de transição */
-  position: sticky;
-  bottom: 0;
-  z-index: 1;
+  border-top: 1px solid #3c3c3c;
+  background: #2c2c2c;
 }
 
-#messageInput {
+.input {
   flex: 1;
   padding: 10px;
-  border: 1px solid #555;
-  border-radius: 8px;
-  background-color: #2c2c2c; /* Fundo escuro para o campo de input */
-  color: #e0e0e0;
+  border: 1px solid #3c3c3c;
+  border-radius: 5px;
   outline: none;
+  font-size: 15px;
+  background: #2b2b38;
+  color: #fff;
 }
 
-button {
-  margin-left: 10px;
-  padding: 10px 20px;
+.input:focus {
   border: none;
-  border-radius: 8px;
-  background-color: #007bff; /* Azul suave para o botão */
-  color: #ffffff;
-  cursor: pointer;
+}
+
+.button {
+  width: 100px;
+  height: 50px;
+  margin-left: 10px;
+  background: #5865f2; /* Azul no botão de enviar */
+  color: white;
+  font-size: 20px;
   font-weight: bold;
+  cursor: pointer;
+  border-radius: 10px; /* Bordas levemente arredondadas */
+  outline: none;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-button:hover {
-  background-color: #0056b3; /* Azul mais escuro no hover */
+.button img {
+  width: 28px; /* Ajuste o tamanho da imagem aqui */
+  height: 28px; /* Ajuste o tamanho da imagem aqui */
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 10px;
+.button:hover {
+  background: #4e5ac9;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #3c3f41;
 }

@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat - Chat App</title>
   <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
   <div class="chat-container">
     <div class="chat-messages" id="messages"></div>
     <div class="chat-input">
-      <input type="text" id="messageInput" placeholder="Digite sua mensagem...">
-      <button onclick="enviar()">Enviar</button>
+      <input type="text" id="messageInput" class="input" placeholder="Digite sua mensagem...">
+      <button class="button" onclick="enviar()">
+        <img src="https://img.icons8.com/ios-filled/50/paper-plane.png" alt="paper-plane"/>
+      </button>
     </div>
-  </div>  
+  </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.0/socket.io.js"></script>
   <script>
@@ -30,7 +34,7 @@
       const messageElement = document.createElement("div");
       messageElement.classList.add("message");
 
-      // Verifica se a mensagem contém uma imagem (gato ou cachorro)
+      // Verifica se a mensagem contém uma imagem
       if (data.message.includes("<img")) {
         messageElement.innerHTML = `${data.username}: ${data.message}`;
       } else {
@@ -47,9 +51,18 @@
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
+    let currentAudio = null;
+
     async function enviar() {
       const message = messageInput.value.trim();
       if (message !== "") {
+        // Adiciona a mensagem de "Aguardando..."
+        const waitingMessageElement = document.createElement("div");
+        waitingMessageElement.classList.add("message", "other-message");
+        waitingMessageElement.textContent = "Aguardando...";
+        messagesContainer.appendChild(waitingMessageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
         if (message.startsWith("/text")) {
           const userMessage = message.slice(5).trim();
           const response = await fetch('/openai/chat', {
@@ -57,6 +70,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: userMessage })
           });
+
           const data = await response.json();
           socket.emit("message", { username: "GPT", message: data });
         } else if (message.startsWith("/image")) {
@@ -66,34 +80,105 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ description: imageDescription })
           });
+
           const data = await response.json();
           if (data.url) {
             socket.emit("message", { username: "GPT", message: `<img src="${data.url}" alt="Imagem gerada">` });
           } else {
             socket.emit("message", { username: "GPT", message: "Erro ao gerar a imagem." });
           }
+
         } else if (message === "/cat") {
-          // Comando /cat - busca a imagem de um gato
-          const response = await fetch('/cat'); // Rota que você criou para obter a imagem de gato
+          const response = await fetch('/cat');
           const data = await response.json();
           if (data.url) {
             socket.emit("message", { username: "TheCatAPI", message: `<img src="${data.url}" alt="Imagem de gato">` });
           } else {
             socket.emit("message", { username: "TheCatAPI", message: "Erro ao buscar a imagem de gato." });
           }
+
         } else if (message === "/dog") {
-          // Comando /dog - busca a imagem de um cachorro
-          const response = await fetch('/dog'); // Rota que você criou para obter a imagem de cachorro
+          const response = await fetch('/dog');
           const data = await response.json();
           if (data.url) {
             socket.emit("message", { username: "Dog CEO", message: `<img src="${data.url}" alt="Imagem de cachorro">` });
           } else {
             socket.emit("message", { username: "Dog CEO", message: "Erro ao buscar a imagem de cachorro." });
           }
+
+        } else if (message === "/fox") {
+          const response = await fetch('/fox');
+          const data = await response.json();
+
+          if (data.url) {
+            socket.emit("message", { username: "RandomFox", message: `<img src="${data.url}" alt="Imagem de raposa">` });
+          } else {
+            socket.emit("message", { username: "RandomFox", message: "Erro ao buscar a imagem de raposa." });
+          }
+
+        } else if (message.startsWith("/clash-royale")) {
+          const params = message.split(" ");
+          const cardName = params.slice(1).join(" ").toLowerCase(); // Nome da carta
+          const response = await fetch('/clash-royale/cards');
+          const data = await response.json();
+          if (data.items) {
+            const card = data.items.find(card => card.name.toLowerCase() === cardName);
+            if (card) {
+              const cardDetails = `
+                <img src="${card.iconUrls.medium}" alt="Imagem da carta">
+                <p>Carta: ${card.name}</p>
+                <p>Raridade: ${card.rarity}</p>
+                <p>Custo de Elixir: ${card.elixirCost}</p>
+              `;
+              socket.emit("message", { username: "Clash Royale API", message: cardDetails });
+            } else {
+              socket.emit("message", { username: "Clash Royale API", message: "Carta não encontrada." });
+            }
+          } else {
+            socket.emit("message", { username: "Clash Royale API", message: "Erro ao buscar informações das cartas." });
+          }
+        } else if (message === "/fox sound") {
+          if (currentAudio) currentAudio.pause();
+          currentAudio = new Audio('sounds/animals/fox.wav');
+          currentAudio.play().then(() => {
+            console.log("Som tocado com sucesso.");
+          }).catch((error) => {
+            console.error("Erro ao tocar o som:", error);
+          });
+          socket.emit("message", { username: "DJ", message: "Tocando Som de Raposa." });
+        } else if (message === "/cat sound") {
+          if (currentAudio) currentAudio.pause();
+          currentAudio = new Audio('sounds/animals/cat.mp3');
+          currentAudio.play().then(() => {
+            console.log("Som tocado com sucesso.");
+          }).catch((error) => {
+            console.error("Erro ao tocar o som:", error);
+          });
+          socket.emit("message", { username: "DJ", message: "Tocando Miado de Gato." });
+        } else if (message === "/dog sound") {
+          if (currentAudio) currentAudio.pause();
+          currentAudio = new Audio('sounds/animals/dog.mp3');
+          currentAudio.play().then(() => {
+            console.log("Som tocado com sucesso.");
+          }).catch((error) => {
+            console.error("Erro ao tocar o som:", error);
+          });
+          socket.emit("message", { username: "DJ", message: "Tocando Latido de Cachorro." });
+        } else if (message === "/stop") {
+          if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+            socket.emit("message", { username: "DJ", message: "Áudio parado." });
+          } else {
+            socket.emit("message", { username: "DJ", message: "Nenhum áudio está tocando." });
+          }
         } else {
           socket.emit("message", { username, message });
         }
         messageInput.value = "";
+
+        // Remove a mensagem de "Aguardando..." após a resposta ser recebida
+        messagesContainer.removeChild(waitingMessageElement);
       }
     }
 
@@ -104,4 +189,5 @@
     });
   </script>
 </body>
+
 </html>
